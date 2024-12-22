@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prayer Times </title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Prayer Times</h1>
+      <h4>@Made By Arzan</h4>
+      <div id="current-time"></div>
+    </header>
+
+    <main>
+      <div class="prayer-times">
+        <div class="prayer" id="fajr">
+          <h2>Fajr</h2>
+          <p>5:30 AM</p>
+        </div>
+        <div class="prayer" id="dhuhr">
+          <h2>Dhuhr</h2>
+          <p>12:15 PM</p>
+        </div>
+        <div class="prayer" id="asr">
+          <h2>Asr</h2>
+          <p>3:30 PM</p>
+        </div>
+        <div class="prayer" id="maghrib">
+          <h2>Maghrib</h2>
+          <p>5:50 PM</p>
+        </div>
+        <div class="prayer" id="isha">
+          <h2>Isha</h2>
+          <p>7:30 PM</p>
+        </div>
+        <div class="prayer" id="jumma">
+          <h2>Jumma</h2>
+          <p>1:10 PM</p>
+        </div>
+      </div>
+
+      <div class="upcoming">
+        <h2>Upcoming Prayer:</h2>
+        <p id="upcoming-prayer"></p>
+        <p id="upcoming-time"></p>
+        <p id="countdown"></p>
+      </div>
+
+      <button id="quran-btn">Read Full Quran</button>
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script>
+    const prayerTimes = {
+      fajr: "5:30 AM",
+      dhuhr: "12:15 PM",
+      asr: "3:30 PM",
+      maghrib: "5:50 PM",
+      isha: "7:30 PM",
+      jumma: "1:10 PM"
+    };
+
+    // Function to display current time
+    function updateTime() {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+      document.getElementById("current-time").innerText = `Current Time: ${timeString}`;
+    }
+
+    // Function to determine the next prayer and its countdown
+    function updateUpcomingPrayer() {
+      const now = new Date();
+      const currentTime = now.getHours() * 60 + now.getMinutes();
+      let nextPrayer = "Fajr"; // Default
+      let nextTime = prayerTimes.fajr; // Default time
+
+      for (let [name, time] of Object.entries(prayerTimes)) {
+        const [hour, minutePart] = time.split(":");
+        const [minute, ampm] = minutePart.split(" ");
+        const prayerTime = (parseInt(hour) % 12) * 60 + parseInt(minute) + (ampm === "PM" ? 12 * 60 : 0);
+
+        if (prayerTime > currentTime) {
+          nextPrayer = name.charAt(0).toUpperCase() + name.slice(1);
+          nextTime = time;
+          break;
+        }
+      }
+
+      // Update the upcoming prayer name and time
+      document.getElementById("upcoming-prayer").innerText = `Name: ${nextPrayer}`;
+      document.getElementById("upcoming-time").innerText = `Time: ${nextTime}`;
+
+      // Calculate time left until next prayer
+      const [nextHour, nextMinutePart] = nextTime.split(":");
+      const [nextMinute, nextAmPm] = nextMinutePart.split(" ");
+      const nextPrayerTime = new Date(now);
+      nextPrayerTime.setHours(nextAmPm === "PM" ? parseInt(nextHour) + 12 : parseInt(nextHour));
+      nextPrayerTime.setMinutes(parseInt(nextMinute));
+      nextPrayerTime.setSeconds(0);
+
+      const timeDifference = nextPrayerTime - now; // In milliseconds
+      const hoursLeft = Math.floor(timeDifference / (1000 * 60 * 60));
+      const minutesLeft = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+      const secondsLeft = Math.floor((timeDifference % (1000 * 60)) / 1000);
+
+      document.getElementById("countdown").innerText = `Time Left: ${hoursLeft}h ${minutesLeft}m ${secondsLeft}s`;
+    }
+
+    // Function to fetch and open the Quran in a new page
+    function openQuranPage() {
+      const url = "https://quran.com"; // URL for Quran website
+      window.open(url, "_blank"); // Open in a new tab
+    }
+
+    // Event listener for the Quran button
+    document.getElementById("quran-btn").addEventListener("click", function() {
+      openQuranPage();
+    });
+
+    // Animate prayer times
+    gsap.from(".prayer", { duration: 1, y: 50, opacity: 0, stagger: 0.2 });
+
+    // Update time and upcoming prayer every second
+    setInterval(updateTime, 1000);
+    setInterval(updateUpcomingPrayer, 1000);
+    updateTime();
+    updateUpcomingPrayer();
+  </script>
+</body>
+</html>
+
